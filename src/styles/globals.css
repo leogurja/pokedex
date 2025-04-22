@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme inline {
+  --default-transition-duration: 300ms;
+}
+
+@layer base {
+  *:focus {
+		@apply outline-none;
+	}
+
+	*:focus-visible {
+		@apply outline-2 outline-violet-600;
+	}
+
+	*::selection {
+		@apply bg-violet-600 text-white;
+	}
+
+	strong,
+	b {
+		@apply font-bold;
+	}
+
+	em {
+		@apply italic;
+	}
+
+	code {
+		@apply font-mono;
+	}
+}
