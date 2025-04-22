@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "../styles/globals.css";
 import type { ReactNode } from "react";
+import { Providers } from "@/components/providers";
+import "../styles/globals.css";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 	weight: "variable",
 });
 
-export const metadata: Metadata = {
+export const metadata = {
 	title: "Pokédex",
 	description:
 		"Explore todos os Pokémon com estatísticas, evoluções e muito mais!",
@@ -51,9 +52,12 @@ export const metadata: Metadata = {
 		follow: true,
 		nocache: false,
 	},
+} satisfies Metadata;
+
+export const viewport = {
 	themeColor: "#ff0000",
 	colorScheme: "dark",
-};
+} satisfies Viewport;
 
 export default function RootLayout({
 	children,
@@ -65,7 +69,7 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} font-geist-sans antialiased`}
 			>
-				{children}
+				<Providers>{children}</Providers>
 			</body>
 		</html>
 	);

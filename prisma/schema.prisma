@@ -1,0 +1,2042 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model abilities {
+  id                         Int                          @id @default(autoincrement())
+  identifier                 String
+  generation_id              Int
+  is_main_series             Boolean
+  generations                generations                  @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ability_changelog          ability_changelog[]
+  ability_flavor_text        ability_flavor_text[]
+  ability_names              ability_names[]
+  ability_prose              ability_prose[]
+  conquest_pokemon_abilities conquest_pokemon_abilities[]
+  pokemon_abilities          pokemon_abilities[]
+
+  @@index([is_main_series], map: "ix_abilities_is_main_series")
+}
+
+model ability_changelog {
+  id                          Int                       @id @default(autoincrement())
+  ability_id                  Int
+  changed_in_version_group_id Int
+  version_groups              version_groups            @relation(fields: [changed_in_version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  abilities                   abilities                 @relation(fields: [ability_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ability_changelog_prose     ability_changelog_prose[]
+}
+
+model ability_changelog_prose {
+  ability_changelog_id Int
+  local_language_id    Int
+  effect               String
+  languages            languages         @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ability_changelog    ability_changelog @relation(fields: [ability_changelog_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([ability_changelog_id, local_language_id])
+}
+
+model ability_flavor_text {
+  ability_id       Int
+  version_group_id Int
+  language_id      Int
+  flavor_text      String
+  languages        languages      @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups   version_groups @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  abilities        abilities      @relation(fields: [ability_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([ability_id, version_group_id, language_id])
+}
+
+model ability_names {
+  ability_id        Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  abilities         abilities @relation(fields: [ability_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([ability_id, local_language_id])
+  @@index([name], map: "ix_ability_names_name")
+}
+
+model ability_prose {
+  ability_id        Int
+  local_language_id Int
+  short_effect      String?
+  effect            String?
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  abilities         abilities @relation(fields: [ability_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([ability_id, local_language_id])
+}
+
+model berries {
+  id                   Int             @id @default(autoincrement())
+  item_id              Int
+  firmness_id          Int
+  natural_gift_power   Int?
+  natural_gift_type_id Int?
+  size                 Int
+  max_harvest          Int
+  growth_time          Int
+  soil_dryness         Int
+  smoothness           Int
+  types                types?          @relation(fields: [natural_gift_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  berry_firmness       berry_firmness  @relation(fields: [firmness_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items                items           @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  berry_flavors        berry_flavors[]
+}
+
+model berry_firmness {
+  id                   Int                    @id @default(autoincrement())
+  identifier           String
+  berries              berries[]
+  berry_firmness_names berry_firmness_names[]
+}
+
+model berry_firmness_names {
+  berry_firmness_id Int
+  local_language_id Int
+  name              String
+  languages         languages      @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  berry_firmness    berry_firmness @relation(fields: [berry_firmness_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([berry_firmness_id, local_language_id])
+  @@index([name], map: "ix_berry_firmness_names_name")
+}
+
+model berry_flavors {
+  berry_id        Int
+  contest_type_id Int
+  flavor          Int
+  contest_types   contest_types @relation(fields: [contest_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  berries         berries       @relation(fields: [berry_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([berry_id, contest_type_id])
+}
+
+model characteristic_text {
+  characteristic_id Int
+  local_language_id Int
+  message           String
+  languages         languages       @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  characteristics   characteristics @relation(fields: [characteristic_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([characteristic_id, local_language_id])
+  @@index([message], map: "ix_characteristic_text_message")
+}
+
+model characteristics {
+  id                  Int                   @id @default(autoincrement())
+  stat_id             Int
+  gene_mod_5          Int
+  characteristic_text characteristic_text[]
+  stats               stats                 @relation(fields: [stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([gene_mod_5], map: "ix_characteristics_gene_mod_5")
+}
+
+model conquest_episode_names {
+  episode_id        Int
+  local_language_id Int
+  name              String
+  languages         languages         @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_episodes conquest_episodes @relation(fields: [episode_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([episode_id, local_language_id])
+  @@index([name], map: "ix_conquest_episode_names_name")
+}
+
+model conquest_episode_warriors {
+  episode_id        Int
+  warrior_id        Int
+  conquest_warriors conquest_warriors @relation(fields: [warrior_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_episodes conquest_episodes @relation(fields: [episode_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([episode_id, warrior_id])
+}
+
+model conquest_episodes {
+  id                                                                                                      Int                               @id @default(autoincrement())
+  identifier                                                                                              String
+  conquest_episode_names                                                                                  conquest_episode_names[]
+  conquest_episode_warriors                                                                               conquest_episode_warriors[]
+  conquest_warrior_transformation_conquest_warrior_transformation_current_episode_idToconquest_episodes   conquest_warrior_transformation[] @relation("conquest_warrior_transformation_current_episode_idToconquest_episodes")
+  conquest_warrior_transformation_conquest_warrior_transformation_completed_episode_idToconquest_episodes conquest_warrior_transformation[] @relation("conquest_warrior_transformation_completed_episode_idToconquest_episodes")
+}
+
+model conquest_kingdom_names {
+  kingdom_id        Int
+  local_language_id Int
+  name              String
+  languages         languages         @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_kingdoms conquest_kingdoms @relation(fields: [kingdom_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([kingdom_id, local_language_id])
+  @@index([name], map: "ix_conquest_kingdom_names_name")
+}
+
+model conquest_kingdoms {
+  id                         Int                          @id @default(autoincrement())
+  identifier                 String
+  type_id                    Int
+  conquest_kingdom_names     conquest_kingdom_names[]
+  types                      types                        @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_pokemon_evolution conquest_pokemon_evolution[]
+}
+
+model conquest_max_links {
+  warrior_rank_id        Int
+  pokemon_species_id     Int
+  max_link               Int
+  pokemon_species        pokemon_species        @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_ranks conquest_warrior_ranks @relation(fields: [warrior_rank_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([warrior_rank_id, pokemon_species_id])
+}
+
+model conquest_move_data {
+  move_id                     Int                          @id @default(autoincrement())
+  power                       Int?
+  accuracy                    Int?
+  effect_chance               Int?
+  effect_id                   Int
+  range_id                    Int
+  displacement_id             Int?
+  conquest_move_displacements conquest_move_displacements? @relation(fields: [displacement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_move_ranges        conquest_move_ranges         @relation(fields: [range_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_move_effects       conquest_move_effects        @relation(fields: [effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves                       moves                        @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model conquest_move_displacement_prose {
+  move_displacement_id        Int
+  local_language_id           Int
+  name                        String?
+  short_effect                String?
+  effect                      String?
+  languages                   languages                   @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_move_displacements conquest_move_displacements @relation(fields: [move_displacement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_displacement_id, local_language_id])
+}
+
+model conquest_move_displacements {
+  id                               Int                                @id @default(autoincrement())
+  identifier                       String
+  affects_target                   Boolean
+  conquest_move_data               conquest_move_data[]
+  conquest_move_displacement_prose conquest_move_displacement_prose[]
+}
+
+model conquest_move_effect_prose {
+  conquest_move_effect_id Int
+  local_language_id       Int
+  short_effect            String?
+  effect                  String?
+  languages               languages             @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_move_effects   conquest_move_effects @relation(fields: [conquest_move_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([conquest_move_effect_id, local_language_id])
+}
+
+model conquest_move_effects {
+  id                         Int                          @id @default(autoincrement())
+  conquest_move_data         conquest_move_data[]
+  conquest_move_effect_prose conquest_move_effect_prose[]
+}
+
+model conquest_move_range_prose {
+  conquest_move_range_id Int
+  local_language_id      Int
+  name                   String?
+  description            String?
+  languages              languages            @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_move_ranges   conquest_move_ranges @relation(fields: [conquest_move_range_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([conquest_move_range_id, local_language_id])
+}
+
+model conquest_move_ranges {
+  id                        Int                         @id @default(autoincrement())
+  identifier                String
+  targets                   Int
+  conquest_move_data        conquest_move_data[]
+  conquest_move_range_prose conquest_move_range_prose[]
+}
+
+model conquest_pokemon_abilities {
+  pokemon_species_id Int
+  slot               Int
+  ability_id         Int
+  abilities          abilities       @relation(fields: [ability_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species    pokemon_species @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_species_id, slot])
+}
+
+model conquest_pokemon_evolution {
+  evolved_species_id     Int                @id @default(autoincrement())
+  required_stat_id       Int?
+  minimum_stat           Int?
+  minimum_link           Int?
+  kingdom_id             Int?
+  warrior_gender_id      Int?
+  item_id                Int?
+  recruiting_ko_required Boolean
+  items                  items?             @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  genders                genders?           @relation(fields: [warrior_gender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_kingdoms      conquest_kingdoms? @relation(fields: [kingdom_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_stats         conquest_stats?    @relation(fields: [required_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species        pokemon_species    @relation(fields: [evolved_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model conquest_pokemon_moves {
+  pokemon_species_id Int             @id @default(autoincrement())
+  move_id            Int
+  moves              moves           @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species    pokemon_species @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model conquest_pokemon_stats {
+  pokemon_species_id Int
+  conquest_stat_id   Int
+  base_stat          Int
+  conquest_stats     conquest_stats  @relation(fields: [conquest_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species    pokemon_species @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_species_id, conquest_stat_id])
+}
+
+model conquest_stat_names {
+  conquest_stat_id  Int
+  local_language_id Int
+  name              String
+  languages         languages      @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_stats    conquest_stats @relation(fields: [conquest_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([conquest_stat_id, local_language_id])
+  @@index([name], map: "ix_conquest_stat_names_name")
+}
+
+model conquest_stats {
+  id                         Int                          @id @default(autoincrement())
+  identifier                 String
+  is_base                    Boolean
+  conquest_pokemon_evolution conquest_pokemon_evolution[]
+  conquest_pokemon_stats     conquest_pokemon_stats[]
+  conquest_stat_names        conquest_stat_names[]
+}
+
+model conquest_transformation_pokemon {
+  transformation_id               Int
+  pokemon_species_id              Int
+  pokemon_species                 pokemon_species                 @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_transformation conquest_warrior_transformation @relation(fields: [transformation_id], references: [transformed_warrior_rank_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([transformation_id, pokemon_species_id])
+}
+
+model conquest_transformation_warriors {
+  transformation_id               Int
+  present_warrior_id              Int
+  conquest_warriors               conquest_warriors               @relation(fields: [present_warrior_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_transformation conquest_warrior_transformation @relation(fields: [transformation_id], references: [transformed_warrior_rank_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([transformation_id, present_warrior_id])
+}
+
+model conquest_warrior_archetypes {
+  id                Int                 @id @default(autoincrement())
+  identifier        String
+  conquest_warriors conquest_warriors[]
+}
+
+model conquest_warrior_names {
+  warrior_id        Int
+  local_language_id Int
+  name              String
+  languages         languages         @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warriors conquest_warriors @relation(fields: [warrior_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([warrior_id, local_language_id])
+  @@index([name], map: "ix_conquest_warrior_names_name")
+}
+
+model conquest_warrior_rank_stat_map {
+  warrior_rank_id        Int
+  warrior_stat_id        Int
+  base_stat              Int
+  conquest_warrior_stats conquest_warrior_stats @relation(fields: [warrior_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_ranks conquest_warrior_ranks @relation(fields: [warrior_rank_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([warrior_rank_id, warrior_stat_id])
+}
+
+model conquest_warrior_ranks {
+  id                              Int                              @id @default(autoincrement())
+  warrior_id                      Int
+  rank                            Int
+  skill_id                        Int
+  conquest_max_links              conquest_max_links[]
+  conquest_warrior_rank_stat_map  conquest_warrior_rank_stat_map[]
+  conquest_warrior_skills         conquest_warrior_skills          @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warriors               conquest_warriors                @relation(fields: [warrior_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_transformation conquest_warrior_transformation?
+
+  @@unique([warrior_id, rank], map: "sqlite_autoindex_conquest_warrior_ranks_1")
+}
+
+model conquest_warrior_skill_names {
+  skill_id                Int
+  local_language_id       Int
+  name                    String
+  languages               languages               @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_skills conquest_warrior_skills @relation(fields: [skill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([skill_id, local_language_id])
+  @@index([name], map: "ix_conquest_warrior_skill_names_name")
+}
+
+model conquest_warrior_skills {
+  id                           Int                            @id @default(autoincrement())
+  identifier                   String
+  conquest_warrior_ranks       conquest_warrior_ranks[]
+  conquest_warrior_skill_names conquest_warrior_skill_names[]
+}
+
+model conquest_warrior_specialties {
+  warrior_id        Int
+  type_id           Int
+  slot              Int
+  types             types             @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warriors conquest_warriors @relation(fields: [warrior_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([warrior_id, type_id, slot])
+}
+
+model conquest_warrior_stat_names {
+  warrior_stat_id        Int
+  local_language_id      Int
+  name                   String
+  languages              languages              @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_stats conquest_warrior_stats @relation(fields: [warrior_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([warrior_stat_id, local_language_id])
+  @@index([name], map: "ix_conquest_warrior_stat_names_name")
+}
+
+model conquest_warrior_stats {
+  id                             Int                              @id @default(autoincrement())
+  identifier                     String
+  conquest_warrior_rank_stat_map conquest_warrior_rank_stat_map[]
+  conquest_warrior_stat_names    conquest_warrior_stat_names[]
+}
+
+model conquest_warrior_transformation {
+  transformed_warrior_rank_id                                                               Int                                @id @default(autoincrement())
+  is_automatic                                                                              Boolean
+  required_link                                                                             Int?
+  completed_episode_id                                                                      Int?
+  current_episode_id                                                                        Int?
+  distant_warrior_id                                                                        Int?
+  female_warlord_count                                                                      Int?
+  pokemon_count                                                                             Int?
+  collection_type_id                                                                        Int?
+  warrior_count                                                                             Int?
+  conquest_transformation_pokemon                                                           conquest_transformation_pokemon[]
+  conquest_transformation_warriors                                                          conquest_transformation_warriors[]
+  types                                                                                     types?                             @relation(fields: [collection_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warriors                                                                         conquest_warriors?                 @relation(fields: [distant_warrior_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_episodes_conquest_warrior_transformation_current_episode_idToconquest_episodes   conquest_episodes?                 @relation("conquest_warrior_transformation_current_episode_idToconquest_episodes", fields: [current_episode_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_episodes_conquest_warrior_transformation_completed_episode_idToconquest_episodes conquest_episodes?                 @relation("conquest_warrior_transformation_completed_episode_idToconquest_episodes", fields: [completed_episode_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conquest_warrior_ranks                                                                    conquest_warrior_ranks             @relation(fields: [transformed_warrior_rank_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model conquest_warriors {
+  id                               Int                                @id @default(autoincrement())
+  identifier                       String
+  gender_id                        Int
+  archetype_id                     Int?
+  conquest_episode_warriors        conquest_episode_warriors[]
+  conquest_transformation_warriors conquest_transformation_warriors[]
+  conquest_warrior_names           conquest_warrior_names[]
+  conquest_warrior_ranks           conquest_warrior_ranks[]
+  conquest_warrior_specialties     conquest_warrior_specialties[]
+  conquest_warrior_transformation  conquest_warrior_transformation[]
+  conquest_warrior_archetypes      conquest_warrior_archetypes?       @relation(fields: [archetype_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  genders                          genders                            @relation(fields: [gender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model contest_combos {
+  first_move_id                              Int
+  second_move_id                             Int
+  moves_contest_combos_second_move_idTomoves moves @relation("contest_combos_second_move_idTomoves", fields: [second_move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves_contest_combos_first_move_idTomoves  moves @relation("contest_combos_first_move_idTomoves", fields: [first_move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([first_move_id, second_move_id])
+}
+
+model contest_effect_prose {
+  contest_effect_id Int
+  local_language_id Int
+  flavor_text       String?
+  effect            String?
+  languages         languages       @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  contest_effects   contest_effects @relation(fields: [contest_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([contest_effect_id, local_language_id])
+}
+
+model contest_effects {
+  id                   Int                     @id @default(autoincrement())
+  appeal               Int
+  jam                  Int
+  contest_effect_prose contest_effect_prose[]
+  moves                moves[]
+}
+
+model contest_type_names {
+  contest_type_id   Int
+  local_language_id Int
+  name              String?
+  flavor            String?
+  color             String?
+  languages         languages     @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  contest_types     contest_types @relation(fields: [contest_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([contest_type_id, local_language_id])
+  @@index([name], map: "ix_contest_type_names_name")
+}
+
+model contest_types {
+  id                                             Int                  @id @default(autoincrement())
+  identifier                                     String
+  berry_flavors                                  berry_flavors[]
+  contest_type_names                             contest_type_names[]
+  moves                                          moves[]
+  natures_natures_likes_flavor_idTocontest_types natures[]            @relation("natures_likes_flavor_idTocontest_types")
+  natures_natures_hates_flavor_idTocontest_types natures[]            @relation("natures_hates_flavor_idTocontest_types")
+}
+
+model egg_group_prose {
+  egg_group_id      Int
+  local_language_id Int
+  name              String
+  languages         languages  @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  egg_groups        egg_groups @relation(fields: [egg_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([egg_group_id, local_language_id])
+  @@index([name], map: "ix_egg_group_prose_name")
+}
+
+model egg_groups {
+  id                 Int                  @id @default(autoincrement())
+  identifier         String
+  egg_group_prose    egg_group_prose[]
+  pokemon_egg_groups pokemon_egg_groups[]
+}
+
+model encounter_condition_prose {
+  encounter_condition_id Int
+  local_language_id      Int
+  name                   String
+  languages              languages            @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  encounter_conditions   encounter_conditions @relation(fields: [encounter_condition_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([encounter_condition_id, local_language_id])
+  @@index([name], map: "ix_encounter_condition_prose_name")
+}
+
+model encounter_condition_value_map {
+  encounter_id                 Int
+  encounter_condition_value_id Int
+  encounter_condition_values   encounter_condition_values @relation(fields: [encounter_condition_value_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  encounters                   encounters                 @relation(fields: [encounter_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([encounter_id, encounter_condition_value_id])
+}
+
+model encounter_condition_value_prose {
+  encounter_condition_value_id Int
+  local_language_id            Int
+  name                         String
+  languages                    languages                  @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  encounter_condition_values   encounter_condition_values @relation(fields: [encounter_condition_value_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([encounter_condition_value_id, local_language_id])
+  @@index([name], map: "ix_encounter_condition_value_prose_name")
+}
+
+model encounter_condition_values {
+  id                              Int                               @id @default(autoincrement())
+  encounter_condition_id          Int
+  identifier                      String
+  is_default                      Boolean
+  encounter_condition_value_map   encounter_condition_value_map[]
+  encounter_condition_value_prose encounter_condition_value_prose[]
+  encounter_conditions            encounter_conditions              @relation(fields: [encounter_condition_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model encounter_conditions {
+  id                         Int                          @id @default(autoincrement())
+  identifier                 String
+  encounter_condition_prose  encounter_condition_prose[]
+  encounter_condition_values encounter_condition_values[]
+}
+
+model encounter_method_prose {
+  encounter_method_id Int
+  local_language_id   Int
+  name                String
+  languages           languages         @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  encounter_methods   encounter_methods @relation(fields: [encounter_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([encounter_method_id, local_language_id])
+  @@index([name], map: "ix_encounter_method_prose_name")
+}
+
+model encounter_methods {
+  id                            Int                             @id @default(autoincrement())
+  identifier                    String                          @unique(map: "sqlite_autoindex_encounter_methods_1")
+  order                         Int                             @unique(map: "sqlite_autoindex_encounter_methods_2")
+  encounter_method_prose        encounter_method_prose[]
+  encounter_slots               encounter_slots[]
+  location_area_encounter_rates location_area_encounter_rates[]
+}
+
+model encounter_slots {
+  id                  Int               @id @default(autoincrement())
+  version_group_id    Int
+  encounter_method_id Int
+  slot                Int?
+  rarity              Int?
+  encounter_methods   encounter_methods @relation(fields: [encounter_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups      version_groups    @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  encounters          encounters[]
+}
+
+model encounters {
+  id                            Int                             @id @default(autoincrement())
+  version_id                    Int
+  location_area_id              Int
+  encounter_slot_id             Int
+  pokemon_id                    Int
+  min_level                     Int
+  max_level                     Int
+  encounter_condition_value_map encounter_condition_value_map[]
+  pokemon                       pokemon                         @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  encounter_slots               encounter_slots                 @relation(fields: [encounter_slot_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  location_areas                location_areas                  @relation(fields: [location_area_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions                      versions                        @relation(fields: [version_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model evolution_chains {
+  id                   Int               @id @default(autoincrement())
+  baby_trigger_item_id Int?
+  items                items?            @relation(fields: [baby_trigger_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species      pokemon_species[]
+}
+
+model evolution_trigger_prose {
+  evolution_trigger_id Int
+  local_language_id    Int
+  name                 String
+  languages            languages          @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  evolution_triggers   evolution_triggers @relation(fields: [evolution_trigger_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([evolution_trigger_id, local_language_id])
+  @@index([name], map: "ix_evolution_trigger_prose_name")
+}
+
+model evolution_triggers {
+  id                      Int                       @id @default(autoincrement())
+  identifier              String
+  evolution_trigger_prose evolution_trigger_prose[]
+  pokemon_evolution       pokemon_evolution[]
+}
+
+model experience {
+  growth_rate_id Int
+  level          Int
+  experience     Int
+  growth_rates   growth_rates @relation(fields: [growth_rate_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([growth_rate_id, level])
+}
+
+model genders {
+  id                         Int                          @id @default(autoincrement())
+  identifier                 String
+  conquest_pokemon_evolution conquest_pokemon_evolution[]
+  conquest_warriors          conquest_warriors[]
+  pokemon_evolution          pokemon_evolution[]
+}
+
+model generation_names {
+  generation_id     Int
+  local_language_id Int
+  name              String
+  languages         languages   @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  generations       generations @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([generation_id, local_language_id])
+  @@index([name], map: "ix_generation_names_name")
+}
+
+model generations {
+  id                       Int                        @id @default(autoincrement())
+  main_region_id           Int
+  identifier               String
+  abilities                abilities[]
+  generation_names         generation_names[]
+  regions                  regions                    @relation(fields: [main_region_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item_game_indices        item_game_indices[]
+  location_game_indices    location_game_indices[]
+  moves                    moves[]
+  pokemon_form_generations pokemon_form_generations[]
+  pokemon_species          pokemon_species[]
+  type_game_indices        type_game_indices[]
+  types                    types[]
+  version_groups           version_groups[]
+}
+
+model growth_rate_prose {
+  growth_rate_id    Int
+  local_language_id Int
+  name              String
+  languages         languages    @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  growth_rates      growth_rates @relation(fields: [growth_rate_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([growth_rate_id, local_language_id])
+  @@index([name], map: "ix_growth_rate_prose_name")
+}
+
+model growth_rates {
+  id                Int                 @id @default(autoincrement())
+  identifier        String
+  formula           String
+  experience        experience[]
+  growth_rate_prose growth_rate_prose[]
+  pokemon_species   pokemon_species[]
+}
+
+model item_categories {
+  id                  Int                   @id @default(autoincrement())
+  pocket_id           Int
+  identifier          String
+  item_pockets        item_pockets          @relation(fields: [pocket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item_category_prose item_category_prose[]
+  items               items[]
+}
+
+model item_category_prose {
+  item_category_id  Int
+  local_language_id Int
+  name              String
+  languages         languages       @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item_categories   item_categories @relation(fields: [item_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_category_id, local_language_id])
+  @@index([name], map: "ix_item_category_prose_name")
+}
+
+model item_flag_map {
+  item_id      Int
+  item_flag_id Int
+  item_flags   item_flags @relation(fields: [item_flag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items        items      @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_id, item_flag_id])
+}
+
+model item_flag_prose {
+  item_flag_id      Int
+  local_language_id Int
+  name              String?
+  description       String?
+  languages         languages  @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item_flags        item_flags @relation(fields: [item_flag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_flag_id, local_language_id])
+  @@index([name], map: "ix_item_flag_prose_name")
+}
+
+model item_flags {
+  id              Int               @id @default(autoincrement())
+  identifier      String
+  item_flag_map   item_flag_map[]
+  item_flag_prose item_flag_prose[]
+}
+
+model item_flavor_summaries {
+  item_id           Int
+  local_language_id Int
+  flavor_summary    String?
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items             items     @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_id, local_language_id])
+}
+
+model item_flavor_text {
+  item_id          Int
+  version_group_id Int
+  language_id      Int
+  flavor_text      String
+  languages        languages      @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups   version_groups @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items            items          @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_id, version_group_id, language_id])
+}
+
+model item_fling_effect_prose {
+  item_fling_effect_id Int
+  local_language_id    Int
+  effect               String
+  languages            languages          @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item_fling_effects   item_fling_effects @relation(fields: [item_fling_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_fling_effect_id, local_language_id])
+}
+
+model item_fling_effects {
+  id                      Int                       @id @default(autoincrement())
+  item_fling_effect_prose item_fling_effect_prose[]
+  items                   items[]
+}
+
+model item_game_indices {
+  item_id       Int
+  generation_id Int
+  game_index    Int
+  generations   generations @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items         items       @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_id, generation_id])
+}
+
+model item_names {
+  item_id           Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items             items     @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_id, local_language_id])
+  @@index([name], map: "ix_item_names_name")
+}
+
+model item_pocket_names {
+  item_pocket_id    Int
+  local_language_id Int
+  name              String
+  languages         languages    @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item_pockets      item_pockets @relation(fields: [item_pocket_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_pocket_id, local_language_id])
+  @@index([name], map: "ix_item_pocket_names_name")
+}
+
+model item_pockets {
+  id                Int                 @id @default(autoincrement())
+  identifier        String
+  item_categories   item_categories[]
+  item_pocket_names item_pocket_names[]
+}
+
+model item_prose {
+  item_id           Int
+  local_language_id Int
+  short_effect      String?
+  effect            String?
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items             items     @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([item_id, local_language_id])
+}
+
+model items {
+  id                                                         Int                          @id @default(autoincrement())
+  identifier                                                 String
+  category_id                                                Int
+  cost                                                       Int
+  fling_power                                                Int?
+  fling_effect_id                                            Int?
+  berries                                                    berries[]
+  conquest_pokemon_evolution                                 conquest_pokemon_evolution[]
+  evolution_chains                                           evolution_chains[]
+  item_flag_map                                              item_flag_map[]
+  item_flavor_summaries                                      item_flavor_summaries[]
+  item_flavor_text                                           item_flavor_text[]
+  item_game_indices                                          item_game_indices[]
+  item_names                                                 item_names[]
+  item_prose                                                 item_prose[]
+  item_fling_effects                                         item_fling_effects?          @relation(fields: [fling_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item_categories                                            item_categories              @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  machines                                                   machines[]
+  pokemon_evolution_pokemon_evolution_held_item_idToitems    pokemon_evolution[]          @relation("pokemon_evolution_held_item_idToitems")
+  pokemon_evolution_pokemon_evolution_trigger_item_idToitems pokemon_evolution[]          @relation("pokemon_evolution_trigger_item_idToitems")
+  pokemon_items                                              pokemon_items[]
+}
+
+model language_names {
+  language_id                                           Int
+  local_language_id                                     Int
+  name                                                  String
+  languages_language_names_local_language_idTolanguages languages @relation("language_names_local_language_idTolanguages", fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  languages_language_names_language_idTolanguages       languages @relation("language_names_language_idTolanguages", fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([language_id, local_language_id])
+  @@index([name], map: "ix_language_names_name")
+}
+
+model languages {
+  id                                                         Int                                @id @default(autoincrement())
+  iso639                                                     String
+  iso3166                                                    String
+  identifier                                                 String
+  official                                                   Boolean
+  order                                                      Int?
+  ability_changelog_prose                                    ability_changelog_prose[]
+  ability_flavor_text                                        ability_flavor_text[]
+  ability_names                                              ability_names[]
+  ability_prose                                              ability_prose[]
+  berry_firmness_names                                       berry_firmness_names[]
+  characteristic_text                                        characteristic_text[]
+  conquest_episode_names                                     conquest_episode_names[]
+  conquest_kingdom_names                                     conquest_kingdom_names[]
+  conquest_move_displacement_prose                           conquest_move_displacement_prose[]
+  conquest_move_effect_prose                                 conquest_move_effect_prose[]
+  conquest_move_range_prose                                  conquest_move_range_prose[]
+  conquest_stat_names                                        conquest_stat_names[]
+  conquest_warrior_names                                     conquest_warrior_names[]
+  conquest_warrior_skill_names                               conquest_warrior_skill_names[]
+  conquest_warrior_stat_names                                conquest_warrior_stat_names[]
+  contest_effect_prose                                       contest_effect_prose[]
+  contest_type_names                                         contest_type_names[]
+  egg_group_prose                                            egg_group_prose[]
+  encounter_condition_prose                                  encounter_condition_prose[]
+  encounter_condition_value_prose                            encounter_condition_value_prose[]
+  encounter_method_prose                                     encounter_method_prose[]
+  evolution_trigger_prose                                    evolution_trigger_prose[]
+  generation_names                                           generation_names[]
+  growth_rate_prose                                          growth_rate_prose[]
+  item_category_prose                                        item_category_prose[]
+  item_flag_prose                                            item_flag_prose[]
+  item_flavor_summaries                                      item_flavor_summaries[]
+  item_flavor_text                                           item_flavor_text[]
+  item_fling_effect_prose                                    item_fling_effect_prose[]
+  item_names                                                 item_names[]
+  item_pocket_names                                          item_pocket_names[]
+  item_prose                                                 item_prose[]
+  language_names_language_names_local_language_idTolanguages language_names[]                   @relation("language_names_local_language_idTolanguages")
+  language_names_language_names_language_idTolanguages       language_names[]                   @relation("language_names_language_idTolanguages")
+  location_area_prose                                        location_area_prose[]
+  location_names                                             location_names[]
+  move_battle_style_prose                                    move_battle_style_prose[]
+  move_damage_class_prose                                    move_damage_class_prose[]
+  move_effect_changelog_prose                                move_effect_changelog_prose[]
+  move_effect_prose                                          move_effect_prose[]
+  move_flag_prose                                            move_flag_prose[]
+  move_flavor_summaries                                      move_flavor_summaries[]
+  move_flavor_text                                           move_flavor_text[]
+  move_meta_ailment_names                                    move_meta_ailment_names[]
+  move_meta_category_prose                                   move_meta_category_prose[]
+  move_names                                                 move_names[]
+  move_target_prose                                          move_target_prose[]
+  nature_names                                               nature_names[]
+  pal_park_area_names                                        pal_park_area_names[]
+  pokeathlon_stat_names                                      pokeathlon_stat_names[]
+  pokedex_prose                                              pokedex_prose[]
+  pokemon_color_names                                        pokemon_color_names[]
+  pokemon_form_names                                         pokemon_form_names[]
+  pokemon_habitat_names                                      pokemon_habitat_names[]
+  pokemon_move_method_prose                                  pokemon_move_method_prose[]
+  pokemon_shape_prose                                        pokemon_shape_prose[]
+  pokemon_species_flavor_summaries                           pokemon_species_flavor_summaries[]
+  pokemon_species_flavor_text                                pokemon_species_flavor_text[]
+  pokemon_species_names                                      pokemon_species_names[]
+  pokemon_species_prose                                      pokemon_species_prose[]
+  region_names                                               region_names[]
+  stat_names                                                 stat_names[]
+  super_contest_effect_prose                                 super_contest_effect_prose[]
+  type_names                                                 type_names[]
+  version_names                                              version_names[]
+
+  @@index([official], map: "ix_languages_official")
+}
+
+model location_area_encounter_rates {
+  location_area_id    Int
+  encounter_method_id Int
+  version_id          Int
+  rate                Int?
+  versions            versions          @relation(fields: [version_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  encounter_methods   encounter_methods @relation(fields: [encounter_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  location_areas      location_areas    @relation(fields: [location_area_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([location_area_id, encounter_method_id, version_id])
+}
+
+model location_area_prose {
+  location_area_id  Int
+  local_language_id Int
+  name              String?
+  languages         languages      @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  location_areas    location_areas @relation(fields: [location_area_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([location_area_id, local_language_id])
+  @@index([name], map: "ix_location_area_prose_name")
+}
+
+model location_areas {
+  id                            Int                             @id @default(autoincrement())
+  location_id                   Int
+  game_index                    Int
+  identifier                    String?
+  encounters                    encounters[]
+  location_area_encounter_rates location_area_encounter_rates[]
+  location_area_prose           location_area_prose[]
+  locations                     locations                       @relation(fields: [location_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model location_game_indices {
+  location_id   Int
+  generation_id Int
+  game_index    Int
+  generations   generations @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  locations     locations   @relation(fields: [location_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([location_id, generation_id, game_index])
+}
+
+model location_names {
+  location_id       Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  locations         locations @relation(fields: [location_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([location_id, local_language_id])
+  @@index([name], map: "ix_location_names_name")
+}
+
+model locations {
+  id                    Int                     @id @default(autoincrement())
+  region_id             Int?
+  identifier            String
+  location_areas        location_areas[]
+  location_game_indices location_game_indices[]
+  location_names        location_names[]
+  regions               regions?                @relation(fields: [region_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_evolution     pokemon_evolution[]
+}
+
+model machines {
+  machine_number   Int
+  version_group_id Int
+  item_id          Int
+  move_id          Int
+  moves            moves          @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items            items          @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups   version_groups @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([machine_number, version_group_id])
+}
+
+model move_battle_style_prose {
+  move_battle_style_id Int
+  local_language_id    Int
+  name                 String
+  languages            languages          @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_battle_styles   move_battle_styles @relation(fields: [move_battle_style_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_battle_style_id, local_language_id])
+  @@index([name], map: "ix_move_battle_style_prose_name")
+}
+
+model move_battle_styles {
+  id                              Int                               @id @default(autoincrement())
+  identifier                      String
+  move_battle_style_prose         move_battle_style_prose[]
+  nature_battle_style_preferences nature_battle_style_preferences[]
+}
+
+model move_changelog {
+  move_id                     Int
+  changed_in_version_group_id Int
+  type_id                     Int?
+  power                       Int?
+  pp                          Int?
+  accuracy                    Int?
+  priority                    Int?
+  target_id                   Int?
+  effect_id                   Int?
+  effect_chance               Int?
+  move_effects                move_effects?            @relation(fields: [effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_targets                move_targets?            @relation(fields: [target_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  types                       types?                   @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups              version_groups           @relation(fields: [changed_in_version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves                       moves                    @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_id, changed_in_version_group_id])
+}
+
+model move_damage_class_prose {
+  move_damage_class_id Int
+  local_language_id    Int
+  name                 String?
+  description          String?
+  languages            languages           @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_damage_classes  move_damage_classes @relation(fields: [move_damage_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_damage_class_id, local_language_id])
+  @@index([name], map: "ix_move_damage_class_prose_name")
+}
+
+model move_damage_classes {
+  id                      Int                       @id @default(autoincrement())
+  identifier              String
+  move_damage_class_prose move_damage_class_prose[]
+  moves                   moves[]
+  stats                   stats[]
+  types                   types[]
+}
+
+model move_effect_changelog {
+  id                          Int                           @id @default(autoincrement())
+  effect_id                   Int
+  changed_in_version_group_id Int
+  version_groups              version_groups                @relation(fields: [changed_in_version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_effects                move_effects                  @relation(fields: [effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_effect_changelog_prose move_effect_changelog_prose[]
+
+  @@unique([effect_id, changed_in_version_group_id], map: "sqlite_autoindex_move_effect_changelog_1")
+}
+
+model move_effect_changelog_prose {
+  move_effect_changelog_id Int
+  local_language_id        Int
+  effect                   String
+  languages                languages             @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_effect_changelog    move_effect_changelog @relation(fields: [move_effect_changelog_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_effect_changelog_id, local_language_id])
+}
+
+model move_effect_prose {
+  move_effect_id    Int
+  local_language_id Int
+  short_effect      String?
+  effect            String?
+  languages         languages    @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_effects      move_effects @relation(fields: [move_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_effect_id, local_language_id])
+}
+
+model move_effects {
+  id                    Int                     @id @default(autoincrement())
+  move_changelog        move_changelog[]
+  move_effect_changelog move_effect_changelog[]
+  move_effect_prose     move_effect_prose[]
+  moves                 moves[]
+}
+
+model move_flag_map {
+  move_id      Int
+  move_flag_id Int
+  move_flags   move_flags @relation(fields: [move_flag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves        moves      @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_id, move_flag_id])
+}
+
+model move_flag_prose {
+  move_flag_id      Int
+  local_language_id Int
+  name              String?
+  description       String?
+  languages         languages  @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_flags        move_flags @relation(fields: [move_flag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_flag_id, local_language_id])
+  @@index([name], map: "ix_move_flag_prose_name")
+}
+
+model move_flags {
+  id              Int               @id @default(autoincrement())
+  identifier      String
+  move_flag_map   move_flag_map[]
+  move_flag_prose move_flag_prose[]
+}
+
+model move_flavor_summaries {
+  move_id           Int
+  local_language_id Int
+  flavor_summary    String?
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves             moves     @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_id, local_language_id])
+}
+
+model move_flavor_text {
+  move_id          Int
+  version_group_id Int
+  language_id      Int
+  flavor_text      String
+  languages        languages      @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups   version_groups @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves            moves          @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_id, version_group_id, language_id])
+}
+
+model move_meta {
+  move_id              Int                  @id @default(autoincrement())
+  meta_category_id     Int
+  meta_ailment_id      Int
+  min_hits             Int?
+  max_hits             Int?
+  min_turns            Int?
+  max_turns            Int?
+  drain                Int
+  healing              Int
+  crit_rate            Int
+  ailment_chance       Int
+  flinch_chance        Int
+  stat_chance          Int
+  move_meta_ailments   move_meta_ailments   @relation(fields: [meta_ailment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_meta_categories move_meta_categories @relation(fields: [meta_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves                moves                @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([stat_chance], map: "ix_move_meta_stat_chance")
+  @@index([crit_rate], map: "ix_move_meta_crit_rate")
+  @@index([min_hits], map: "ix_move_meta_min_hits")
+  @@index([max_turns], map: "ix_move_meta_max_turns")
+  @@index([ailment_chance], map: "ix_move_meta_ailment_chance")
+  @@index([drain], map: "ix_move_meta_drain")
+  @@index([max_hits], map: "ix_move_meta_max_hits")
+  @@index([flinch_chance], map: "ix_move_meta_flinch_chance")
+  @@index([healing], map: "ix_move_meta_healing")
+  @@index([min_turns], map: "ix_move_meta_min_turns")
+}
+
+model move_meta_ailment_names {
+  move_meta_ailment_id Int
+  local_language_id    Int
+  name                 String
+  languages            languages          @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_meta_ailments   move_meta_ailments @relation(fields: [move_meta_ailment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_meta_ailment_id, local_language_id])
+  @@index([name], map: "ix_move_meta_ailment_names_name")
+}
+
+model move_meta_ailments {
+  id                      Int                       @id @default(autoincrement())
+  identifier              String                    @unique(map: "ix_move_meta_ailments_identifier")
+  move_meta               move_meta[]
+  move_meta_ailment_names move_meta_ailment_names[]
+}
+
+model move_meta_categories {
+  id                       Int                        @id @default(autoincrement())
+  identifier               String                     @unique(map: "ix_move_meta_categories_identifier")
+  move_meta                move_meta[]
+  move_meta_category_prose move_meta_category_prose[]
+}
+
+model move_meta_category_prose {
+  move_meta_category_id Int
+  local_language_id     Int
+  description           String
+  languages             languages            @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_meta_categories  move_meta_categories @relation(fields: [move_meta_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_meta_category_id, local_language_id])
+}
+
+model move_meta_stat_changes {
+  move_id Int
+  stat_id Int
+  change  Int
+  stats   stats @relation(fields: [stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves   moves @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_id, stat_id])
+  @@index([change], map: "ix_move_meta_stat_changes_change")
+}
+
+model move_names {
+  move_id           Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves             moves     @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_id, local_language_id])
+  @@index([name], map: "ix_move_names_name")
+}
+
+model move_target_prose {
+  move_target_id    Int
+  local_language_id Int
+  name              String?
+  description       String?
+  languages         languages    @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_targets      move_targets @relation(fields: [move_target_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([move_target_id, local_language_id])
+  @@index([name], map: "ix_move_target_prose_name")
+}
+
+model move_targets {
+  id                Int                 @id @default(autoincrement())
+  identifier        String
+  move_changelog    move_changelog[]
+  move_target_prose move_target_prose[]
+  moves             moves[]
+}
+
+model moves {
+  id                                                              Int                      @id @default(autoincrement())
+  identifier                                                      String
+  generation_id                                                   Int
+  type_id                                                         Int
+  power                                                           Int?
+  pp                                                              Int?
+  accuracy                                                        Int?
+  priority                                                        Int
+  target_id                                                       Int
+  damage_class_id                                                 Int
+  effect_id                                                       Int
+  effect_chance                                                   Int?
+  contest_type_id                                                 Int?
+  contest_effect_id                                               Int?
+  super_contest_effect_id                                         Int?
+  conquest_move_data                                              conquest_move_data?
+  conquest_pokemon_moves                                          conquest_pokemon_moves[]
+  contest_combos_contest_combos_second_move_idTomoves             contest_combos[]         @relation("contest_combos_second_move_idTomoves")
+  contest_combos_contest_combos_first_move_idTomoves              contest_combos[]         @relation("contest_combos_first_move_idTomoves")
+  machines                                                        machines[]
+  move_changelog                                                  move_changelog[]
+  move_flag_map                                                   move_flag_map[]
+  move_flavor_summaries                                           move_flavor_summaries[]
+  move_flavor_text                                                move_flavor_text[]
+  move_meta                                                       move_meta?
+  move_meta_stat_changes                                          move_meta_stat_changes[]
+  move_names                                                      move_names[]
+  super_contest_effects                                           super_contest_effects?   @relation(fields: [super_contest_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  contest_effects                                                 contest_effects?         @relation(fields: [contest_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  contest_types                                                   contest_types?           @relation(fields: [contest_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_effects                                                    move_effects             @relation(fields: [effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_damage_classes                                             move_damage_classes      @relation(fields: [damage_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  move_targets                                                    move_targets             @relation(fields: [target_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  types                                                           types                    @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  generations                                                     generations              @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_evolution                                               pokemon_evolution[]
+  pokemon_moves                                                   pokemon_moves[]
+  super_contest_combos_super_contest_combos_second_move_idTomoves super_contest_combos[]   @relation("super_contest_combos_second_move_idTomoves")
+  super_contest_combos_super_contest_combos_first_move_idTomoves  super_contest_combos[]   @relation("super_contest_combos_first_move_idTomoves")
+}
+
+model nature_battle_style_preferences {
+  nature_id            Int
+  move_battle_style_id Int
+  low_hp_preference    Int
+  high_hp_preference   Int
+  move_battle_styles   move_battle_styles @relation(fields: [move_battle_style_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  natures              natures            @relation(fields: [nature_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([nature_id, move_battle_style_id])
+}
+
+model nature_names {
+  nature_id         Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  natures           natures   @relation(fields: [nature_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([nature_id, local_language_id])
+  @@index([name], map: "ix_nature_names_name")
+}
+
+model nature_pokeathlon_stats {
+  nature_id          Int
+  pokeathlon_stat_id Int
+  max_change         Int
+  pokeathlon_stats   pokeathlon_stats @relation(fields: [pokeathlon_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  natures            natures          @relation(fields: [nature_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([nature_id, pokeathlon_stat_id])
+}
+
+model natures {
+  id                                                   Int                               @id @default(autoincrement())
+  identifier                                           String
+  decreased_stat_id                                    Int
+  increased_stat_id                                    Int
+  hates_flavor_id                                      Int
+  likes_flavor_id                                      Int
+  game_index                                           Int                               @unique(map: "sqlite_autoindex_natures_1")
+  nature_battle_style_preferences                      nature_battle_style_preferences[]
+  nature_names                                         nature_names[]
+  nature_pokeathlon_stats                              nature_pokeathlon_stats[]
+  contest_types_natures_likes_flavor_idTocontest_types contest_types                     @relation("natures_likes_flavor_idTocontest_types", fields: [likes_flavor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  contest_types_natures_hates_flavor_idTocontest_types contest_types                     @relation("natures_hates_flavor_idTocontest_types", fields: [hates_flavor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stats_natures_increased_stat_idTostats               stats                             @relation("natures_increased_stat_idTostats", fields: [increased_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stats_natures_decreased_stat_idTostats               stats                             @relation("natures_decreased_stat_idTostats", fields: [decreased_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model pal_park {
+  species_id      Int             @id @default(autoincrement())
+  area_id         Int
+  base_score      Int
+  rate            Int
+  pal_park_areas  pal_park_areas  @relation(fields: [area_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species pokemon_species @relation(fields: [species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model pal_park_area_names {
+  pal_park_area_id  Int
+  local_language_id Int
+  name              String
+  languages         languages      @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pal_park_areas    pal_park_areas @relation(fields: [pal_park_area_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pal_park_area_id, local_language_id])
+  @@index([name], map: "ix_pal_park_area_names_name")
+}
+
+model pal_park_areas {
+  id                  Int                   @id @default(autoincrement())
+  identifier          String
+  pal_park            pal_park[]
+  pal_park_area_names pal_park_area_names[]
+}
+
+model pokeathlon_stat_names {
+  pokeathlon_stat_id Int
+  local_language_id  Int
+  name               String
+  languages          languages        @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokeathlon_stats   pokeathlon_stats @relation(fields: [pokeathlon_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokeathlon_stat_id, local_language_id])
+  @@index([name], map: "ix_pokeathlon_stat_names_name")
+}
+
+model pokeathlon_stats {
+  id                            Int                             @id @default(autoincrement())
+  identifier                    String
+  nature_pokeathlon_stats       nature_pokeathlon_stats[]
+  pokeathlon_stat_names         pokeathlon_stat_names[]
+  pokemon_form_pokeathlon_stats pokemon_form_pokeathlon_stats[]
+}
+
+model pokedex_prose {
+  pokedex_id        Int
+  local_language_id Int
+  name              String?
+  description       String?
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokedexes         pokedexes @relation(fields: [pokedex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokedex_id, local_language_id])
+  @@index([name], map: "ix_pokedex_prose_name")
+}
+
+model pokedex_version_groups {
+  pokedex_id       Int
+  version_group_id Int
+  version_groups   version_groups @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokedexes        pokedexes      @relation(fields: [pokedex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokedex_id, version_group_id])
+}
+
+model pokedexes {
+  id                     Int                      @id @default(autoincrement())
+  region_id              Int?
+  identifier             String
+  is_main_series         Boolean
+  pokedex_prose          pokedex_prose[]
+  pokedex_version_groups pokedex_version_groups[]
+  regions                regions?                 @relation(fields: [region_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_dex_numbers    pokemon_dex_numbers[]
+}
+
+model pokemon {
+  id                   Int                    @id @default(autoincrement())
+  identifier           String
+  species_id           Int?
+  height               Int
+  weight               Int
+  base_experience      Int
+  order                Int
+  is_default           Boolean
+  encounters           encounters[]
+  pokemon_species      pokemon_species?       @relation(fields: [species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_abilities    pokemon_abilities[]
+  pokemon_forms        pokemon_forms[]
+  pokemon_game_indices pokemon_game_indices[]
+  pokemon_items        pokemon_items[]
+  pokemon_moves        pokemon_moves[]
+  pokemon_stats        pokemon_stats[]
+  pokemon_types        pokemon_types[]
+
+  @@index([is_default], map: "ix_pokemon_is_default")
+  @@index([order], map: "ix_pokemon_order")
+}
+
+model pokemon_abilities {
+  pokemon_id Int
+  ability_id Int
+  is_hidden  Boolean
+  slot       Int
+  abilities  abilities @relation(fields: [ability_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon    pokemon   @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_id, slot])
+  @@index([is_hidden], map: "ix_pokemon_abilities_is_hidden")
+}
+
+model pokemon_color_names {
+  pokemon_color_id  Int
+  local_language_id Int
+  name              String
+  languages         languages      @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_colors    pokemon_colors @relation(fields: [pokemon_color_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_color_id, local_language_id])
+  @@index([name], map: "ix_pokemon_color_names_name")
+}
+
+model pokemon_colors {
+  id                  Int                   @id @default(autoincrement())
+  identifier          String
+  pokemon_color_names pokemon_color_names[]
+  pokemon_species     pokemon_species[]
+}
+
+model pokemon_dex_numbers {
+  species_id      Int
+  pokedex_id      Int
+  pokedex_number  Int
+  pokedexes       pokedexes       @relation(fields: [pokedex_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species pokemon_species @relation(fields: [species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([species_id, pokedex_id])
+}
+
+model pokemon_egg_groups {
+  species_id      Int
+  egg_group_id    Int
+  egg_groups      egg_groups      @relation(fields: [egg_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species pokemon_species @relation(fields: [species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([species_id, egg_group_id])
+}
+
+model pokemon_evolution {
+  id                                                                    Int                @id @default(autoincrement())
+  evolved_species_id                                                    Int
+  evolution_trigger_id                                                  Int
+  trigger_item_id                                                       Int?
+  minimum_level                                                         Int?
+  gender_id                                                             Int?
+  location_id                                                           Int?
+  held_item_id                                                          Int?
+  time_of_day                                                           String?
+  known_move_id                                                         Int?
+  known_move_type_id                                                    Int?
+  minimum_happiness                                                     Int?
+  minimum_beauty                                                        Int?
+  minimum_affection                                                     Int?
+  relative_physical_stats                                               Int?
+  party_species_id                                                      Int?
+  party_type_id                                                         Int?
+  trade_species_id                                                      Int?
+  needs_overworld_rain                                                  Boolean
+  turn_upside_down                                                      Boolean
+  pokemon_species_pokemon_evolution_trade_species_idTopokemon_species   pokemon_species?   @relation("pokemon_evolution_trade_species_idTopokemon_species", fields: [trade_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  types_pokemon_evolution_party_type_idTotypes                          types?             @relation("pokemon_evolution_party_type_idTotypes", fields: [party_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species_pokemon_evolution_party_species_idTopokemon_species   pokemon_species?   @relation("pokemon_evolution_party_species_idTopokemon_species", fields: [party_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  types_pokemon_evolution_known_move_type_idTotypes                     types?             @relation("pokemon_evolution_known_move_type_idTotypes", fields: [known_move_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves                                                                 moves?             @relation(fields: [known_move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items_pokemon_evolution_held_item_idToitems                           items?             @relation("pokemon_evolution_held_item_idToitems", fields: [held_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  locations                                                             locations?         @relation(fields: [location_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  genders                                                               genders?           @relation(fields: [gender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items_pokemon_evolution_trigger_item_idToitems                        items?             @relation("pokemon_evolution_trigger_item_idToitems", fields: [trigger_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  evolution_triggers                                                    evolution_triggers @relation(fields: [evolution_trigger_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species_pokemon_evolution_evolved_species_idTopokemon_species pokemon_species    @relation("pokemon_evolution_evolved_species_idTopokemon_species", fields: [evolved_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model pokemon_form_generations {
+  pokemon_form_id Int
+  generation_id   Int
+  game_index      Int
+  generations     generations   @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_forms   pokemon_forms @relation(fields: [pokemon_form_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_form_id, generation_id])
+}
+
+model pokemon_form_names {
+  pokemon_form_id   Int
+  local_language_id Int
+  form_name         String?
+  pokemon_name      String?
+  languages         languages     @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_forms     pokemon_forms @relation(fields: [pokemon_form_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_form_id, local_language_id])
+  @@index([form_name], map: "ix_pokemon_form_names_form_name")
+  @@index([pokemon_name], map: "ix_pokemon_form_names_pokemon_name")
+}
+
+model pokemon_form_pokeathlon_stats {
+  pokemon_form_id    Int
+  pokeathlon_stat_id Int
+  minimum_stat       Int
+  base_stat          Int
+  maximum_stat       Int
+  pokeathlon_stats   pokeathlon_stats @relation(fields: [pokeathlon_stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_forms      pokemon_forms    @relation(fields: [pokemon_form_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_form_id, pokeathlon_stat_id])
+}
+
+model pokemon_forms {
+  id                             Int                             @id @default(autoincrement())
+  identifier                     String
+  form_identifier                String?
+  pokemon_id                     Int
+  introduced_in_version_group_id Int?
+  is_default                     Boolean
+  is_battle_only                 Boolean
+  is_mega                        Boolean
+  form_order                     Int
+  order                          Int
+  pokemon_form_generations       pokemon_form_generations[]
+  pokemon_form_names             pokemon_form_names[]
+  pokemon_form_pokeathlon_stats  pokemon_form_pokeathlon_stats[]
+  version_groups                 version_groups?                 @relation(fields: [introduced_in_version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon                        pokemon                         @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model pokemon_game_indices {
+  pokemon_id Int
+  version_id Int
+  game_index Int
+  versions   versions @relation(fields: [version_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon    pokemon  @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_id, version_id])
+}
+
+model pokemon_habitat_names {
+  pokemon_habitat_id Int
+  local_language_id  Int
+  name               String
+  languages          languages        @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_habitats   pokemon_habitats @relation(fields: [pokemon_habitat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_habitat_id, local_language_id])
+  @@index([name], map: "ix_pokemon_habitat_names_name")
+}
+
+model pokemon_habitats {
+  id                    Int                     @id @default(autoincrement())
+  identifier            String
+  pokemon_habitat_names pokemon_habitat_names[]
+  pokemon_species       pokemon_species[]
+}
+
+model pokemon_items {
+  pokemon_id Int
+  version_id Int
+  item_id    Int
+  rarity     Int
+  items      items    @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions   versions @relation(fields: [version_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon    pokemon  @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_id, version_id, item_id])
+}
+
+model pokemon_move_method_prose {
+  pokemon_move_method_id Int
+  local_language_id      Int
+  name                   String?
+  description            String?
+  languages              languages            @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_move_methods   pokemon_move_methods @relation(fields: [pokemon_move_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_move_method_id, local_language_id])
+  @@index([name], map: "ix_pokemon_move_method_prose_name")
+}
+
+model pokemon_move_methods {
+  id                                 Int                                  @id @default(autoincrement())
+  identifier                         String
+  pokemon_move_method_prose          pokemon_move_method_prose[]
+  pokemon_moves                      pokemon_moves[]
+  version_group_pokemon_move_methods version_group_pokemon_move_methods[]
+}
+
+model pokemon_moves {
+  pokemon_id             Int
+  version_group_id       Int
+  move_id                Int
+  pokemon_move_method_id Int
+  level                  Int
+  order                  Int?
+  pokemon_move_methods   pokemon_move_methods @relation(fields: [pokemon_move_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves                  moves                @relation(fields: [move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups         version_groups       @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon                pokemon              @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_id, version_group_id, move_id, pokemon_move_method_id, level])
+  @@index([level], map: "ix_pokemon_moves_level")
+  @@index([move_id], map: "ix_pokemon_moves_move_id")
+  @@index([pokemon_id], map: "ix_pokemon_moves_pokemon_id")
+  @@index([pokemon_move_method_id], map: "ix_pokemon_moves_pokemon_move_method_id")
+  @@index([version_group_id], map: "ix_pokemon_moves_version_group_id")
+}
+
+model pokemon_shape_prose {
+  pokemon_shape_id  Int
+  local_language_id Int
+  name              String?
+  awesome_name      String?
+  description       String?
+  languages         languages      @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_shapes    pokemon_shapes @relation(fields: [pokemon_shape_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_shape_id, local_language_id])
+  @@index([name], map: "ix_pokemon_shape_prose_name")
+}
+
+model pokemon_shapes {
+  id                  Int                   @id @default(autoincrement())
+  identifier          String
+  pokemon_shape_prose pokemon_shape_prose[]
+  pokemon_species     pokemon_species[]
+}
+
+model pokemon_species {
+  id                                                                      Int                                @id @default(autoincrement())
+  identifier                                                              String
+  generation_id                                                           Int?
+  evolves_from_species_id                                                 Int?
+  evolution_chain_id                                                      Int?
+  color_id                                                                Int
+  shape_id                                                                Int
+  habitat_id                                                              Int?
+  gender_rate                                                             Int
+  capture_rate                                                            Int
+  base_happiness                                                          Int
+  is_baby                                                                 Boolean
+  hatch_counter                                                           Int
+  has_gender_differences                                                  Boolean
+  growth_rate_id                                                          Int
+  forms_switchable                                                        Boolean
+  order                                                                   Int
+  conquest_order                                                          Int?
+  conquest_max_links                                                      conquest_max_links[]
+  conquest_pokemon_abilities                                              conquest_pokemon_abilities[]
+  conquest_pokemon_evolution                                              conquest_pokemon_evolution?
+  conquest_pokemon_moves                                                  conquest_pokemon_moves?
+  conquest_pokemon_stats                                                  conquest_pokemon_stats[]
+  conquest_transformation_pokemon                                         conquest_transformation_pokemon[]
+  pal_park                                                                pal_park?
+  pokemon                                                                 pokemon[]
+  pokemon_dex_numbers                                                     pokemon_dex_numbers[]
+  pokemon_egg_groups                                                      pokemon_egg_groups[]
+  pokemon_evolution_pokemon_evolution_trade_species_idTopokemon_species   pokemon_evolution[]                @relation("pokemon_evolution_trade_species_idTopokemon_species")
+  pokemon_evolution_pokemon_evolution_party_species_idTopokemon_species   pokemon_evolution[]                @relation("pokemon_evolution_party_species_idTopokemon_species")
+  pokemon_evolution_pokemon_evolution_evolved_species_idTopokemon_species pokemon_evolution[]                @relation("pokemon_evolution_evolved_species_idTopokemon_species")
+  growth_rates                                                            growth_rates                       @relation(fields: [growth_rate_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_habitats                                                        pokemon_habitats?                  @relation(fields: [habitat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_shapes                                                          pokemon_shapes                     @relation(fields: [shape_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_colors                                                          pokemon_colors                     @relation(fields: [color_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  evolution_chains                                                        evolution_chains?                  @relation(fields: [evolution_chain_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species                                                         pokemon_species?                   @relation("pokemon_speciesTopokemon_species", fields: [evolves_from_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_pokemon_species                                                   pokemon_species[]                  @relation("pokemon_speciesTopokemon_species")
+  generations                                                             generations?                       @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species_flavor_summaries                                        pokemon_species_flavor_summaries[]
+  pokemon_species_flavor_text                                             pokemon_species_flavor_text[]
+  pokemon_species_names                                                   pokemon_species_names[]
+  pokemon_species_prose                                                   pokemon_species_prose[]
+
+  @@index([conquest_order], map: "ix_pokemon_species_conquest_order")
+  @@index([order], map: "ix_pokemon_species_order")
+}
+
+model pokemon_species_flavor_summaries {
+  pokemon_species_id Int
+  local_language_id  Int
+  flavor_summary     String?
+  languages          languages       @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species    pokemon_species @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_species_id, local_language_id])
+}
+
+model pokemon_species_flavor_text {
+  species_id      Int
+  version_id      Int
+  language_id     Int
+  flavor_text     String
+  languages       languages       @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions        versions        @relation(fields: [version_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species pokemon_species @relation(fields: [species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([species_id, version_id, language_id])
+}
+
+model pokemon_species_names {
+  pokemon_species_id Int
+  local_language_id  Int
+  name               String?
+  genus              String?
+  languages          languages       @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species    pokemon_species @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_species_id, local_language_id])
+  @@index([name], map: "ix_pokemon_species_names_name")
+}
+
+model pokemon_species_prose {
+  pokemon_species_id Int
+  local_language_id  Int
+  form_description   String?
+  languages          languages       @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon_species    pokemon_species @relation(fields: [pokemon_species_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_species_id, local_language_id])
+}
+
+model pokemon_stats {
+  pokemon_id Int
+  stat_id    Int
+  base_stat  Int
+  effort     Int
+  stats      stats   @relation(fields: [stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon    pokemon @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_id, stat_id])
+}
+
+model pokemon_types {
+  pokemon_id Int
+  type_id    Int
+  slot       Int
+  types      types   @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pokemon    pokemon @relation(fields: [pokemon_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([pokemon_id, slot])
+}
+
+model region_names {
+  region_id         Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  regions           regions   @relation(fields: [region_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([region_id, local_language_id])
+  @@index([name], map: "ix_region_names_name")
+}
+
+model regions {
+  id                    Int                     @id @default(autoincrement())
+  identifier            String
+  generations           generations[]
+  locations             locations[]
+  pokedexes             pokedexes[]
+  region_names          region_names[]
+  version_group_regions version_group_regions[]
+}
+
+model stat_names {
+  stat_id           Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stats             stats     @relation(fields: [stat_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([stat_id, local_language_id])
+  @@index([name], map: "ix_stat_names_name")
+}
+
+model stats {
+  id                                       Int                      @id @default(autoincrement())
+  damage_class_id                          Int?
+  identifier                               String
+  is_battle_only                           Boolean
+  game_index                               Int?
+  characteristics                          characteristics[]
+  move_meta_stat_changes                   move_meta_stat_changes[]
+  natures_natures_increased_stat_idTostats natures[]                @relation("natures_increased_stat_idTostats")
+  natures_natures_decreased_stat_idTostats natures[]                @relation("natures_decreased_stat_idTostats")
+  pokemon_stats                            pokemon_stats[]
+  stat_names                               stat_names[]
+  move_damage_classes                      move_damage_classes?     @relation(fields: [damage_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model super_contest_combos {
+  first_move_id                                    Int
+  second_move_id                                   Int
+  moves_super_contest_combos_second_move_idTomoves moves @relation("super_contest_combos_second_move_idTomoves", fields: [second_move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  moves_super_contest_combos_first_move_idTomoves  moves @relation("super_contest_combos_first_move_idTomoves", fields: [first_move_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([first_move_id, second_move_id])
+}
+
+model super_contest_effect_prose {
+  super_contest_effect_id Int
+  local_language_id       Int
+  flavor_text             String
+  languages               languages             @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  super_contest_effects   super_contest_effects @relation(fields: [super_contest_effect_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([super_contest_effect_id, local_language_id])
+}
+
+model super_contest_effects {
+  id                         Int                          @id @default(autoincrement())
+  appeal                     Int
+  moves                      moves[]
+  super_contest_effect_prose super_contest_effect_prose[]
+}
+
+model type_efficacy {
+  damage_type_id                            Int
+  target_type_id                            Int
+  damage_factor                             Int
+  types_type_efficacy_target_type_idTotypes types @relation("type_efficacy_target_type_idTotypes", fields: [target_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  types_type_efficacy_damage_type_idTotypes types @relation("type_efficacy_damage_type_idTotypes", fields: [damage_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([damage_type_id, target_type_id])
+}
+
+model type_game_indices {
+  type_id       Int
+  generation_id Int
+  game_index    Int
+  generations   generations @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  types         types       @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([type_id, generation_id])
+}
+
+model type_names {
+  type_id           Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  types             types     @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([type_id, local_language_id])
+  @@index([name], map: "ix_type_names_name")
+}
+
+model types {
+  id                                                            Int                               @id @default(autoincrement())
+  identifier                                                    String
+  generation_id                                                 Int
+  damage_class_id                                               Int?
+  berries                                                       berries[]
+  conquest_kingdoms                                             conquest_kingdoms[]
+  conquest_warrior_specialties                                  conquest_warrior_specialties[]
+  conquest_warrior_transformation                               conquest_warrior_transformation[]
+  move_changelog                                                move_changelog[]
+  moves                                                         moves[]
+  pokemon_evolution_pokemon_evolution_party_type_idTotypes      pokemon_evolution[]               @relation("pokemon_evolution_party_type_idTotypes")
+  pokemon_evolution_pokemon_evolution_known_move_type_idTotypes pokemon_evolution[]               @relation("pokemon_evolution_known_move_type_idTotypes")
+  pokemon_types                                                 pokemon_types[]
+  type_efficacy_type_efficacy_target_type_idTotypes             type_efficacy[]                   @relation("type_efficacy_target_type_idTotypes")
+  type_efficacy_type_efficacy_damage_type_idTotypes             type_efficacy[]                   @relation("type_efficacy_damage_type_idTotypes")
+  type_game_indices                                             type_game_indices[]
+  type_names                                                    type_names[]
+  move_damage_classes                                           move_damage_classes?              @relation(fields: [damage_class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  generations                                                   generations                       @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model version_group_pokemon_move_methods {
+  version_group_id       Int
+  pokemon_move_method_id Int
+  pokemon_move_methods   pokemon_move_methods @relation(fields: [pokemon_move_method_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups         version_groups       @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([version_group_id, pokemon_move_method_id])
+}
+
+model version_group_regions {
+  version_group_id Int
+  region_id        Int
+  regions          regions        @relation(fields: [region_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  version_groups   version_groups @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([version_group_id, region_id])
+}
+
+model version_groups {
+  id                                 Int                                  @id @default(autoincrement())
+  identifier                         String                               @unique(map: "sqlite_autoindex_version_groups_1")
+  generation_id                      Int
+  order                              Int?
+  ability_changelog                  ability_changelog[]
+  ability_flavor_text                ability_flavor_text[]
+  encounter_slots                    encounter_slots[]
+  item_flavor_text                   item_flavor_text[]
+  machines                           machines[]
+  move_changelog                     move_changelog[]
+  move_effect_changelog              move_effect_changelog[]
+  move_flavor_text                   move_flavor_text[]
+  pokedex_version_groups             pokedex_version_groups[]
+  pokemon_forms                      pokemon_forms[]
+  pokemon_moves                      pokemon_moves[]
+  version_group_pokemon_move_methods version_group_pokemon_move_methods[]
+  version_group_regions              version_group_regions[]
+  generations                        generations                          @relation(fields: [generation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions                           versions[]
+}
+
+model version_names {
+  version_id        Int
+  local_language_id Int
+  name              String
+  languages         languages @relation(fields: [local_language_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  versions          versions  @relation(fields: [version_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([version_id, local_language_id])
+  @@index([name], map: "ix_version_names_name")
+}
+
+model versions {
+  id                            Int                             @id @default(autoincrement())
+  version_group_id              Int
+  identifier                    String
+  encounters                    encounters[]
+  location_area_encounter_rates location_area_encounter_rates[]
+  pokemon_game_indices          pokemon_game_indices[]
+  pokemon_items                 pokemon_items[]
+  pokemon_species_flavor_text   pokemon_species_flavor_text[]
+  version_names                 version_names[]
+  version_groups                version_groups                  @relation(fields: [version_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
